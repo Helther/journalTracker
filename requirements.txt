@@ -1,0 +1,16 @@
+# Web framework
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+gunicorn==23.0.0
+
+# Валидация / настройки
+pydantic==2.10.4
+pydantic-settings==2.7.0
+
+# БД 
+sqlalchemy[asyncio]==2.0.36
+asyncpg==0.30.0
+alembic==1.14.0
+greenlet==3.1.1
+
+python-dateutil==2.9.0.post0
