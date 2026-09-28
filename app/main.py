@@ -1,11 +1,30 @@
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
+
+from app.db.config import DBConfig
+from app.db.database import Database
+
 
 app = FastAPI()
 
+@asynccontextmanager
+async def app_lifespan(app: FastAPI):
+    db = Database(DBConfig())
+    db.connect()
+    app.state.db = db
+    try:
+        yield
+    finally:
+        await db.dispose()
+
+
+app = FastAPI(lifespan=app_lifespan)
+
 
 @app.get("/health")
-async def root():
-    return {}
+async def health():
+    ok = await app.state.db.healthcheck()
+    return {"status": "ok" if ok else "fail"}
 
 @app.get("/api/v1/logs") # get logs based on app
 async def logs_get():
