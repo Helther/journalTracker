@@ -3,7 +3,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     DB_HOST="localhost" \
-    DB_PORT="5432"
+    DB_PORT="5432" \
+    DB_ADMIN_PASSWORD="" \
+    POSTGRES_PASSWORD="" \
+    POSTGRES_SUPERUSER=postgres 
 
 
 # System deps (psql,)

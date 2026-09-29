@@ -1,23 +1,7 @@
-"""Класс Database: соединение, инициализация пользователя/БД/схемы,
-фабрика сессий.
-
-Использование:
-
-    cfg = DBConfig()
-    db = Database(cfg)
-    await db.init()                    # один раз при старте (или из CLI)
-    async with db.session() as s:      # рабочая сессия
-        ...
-    await db.dispose()
-
-Или как асинхронный контекст-менеджер:
-
-    async with Database(cfg) as db:
-        async with db.session() as s:
-            ...
 """
-
-from __future__ import annotations
+Класс Database: соединение, инициализация пользователя/БД/схемы,
+фабрика сессий.
+"""
 
 import logging
 import re
@@ -68,7 +52,6 @@ class Database:
         pwd = c.admin_password.get_secret_value()
         auth = f"{c.admin_user}:{pwd}" if pwd else c.admin_user
         return f"postgresql://{auth}@{c.host}:{c.port}/{database}"
-
 
     def connect(self) -> None:
         """Создать engine и фабрику сессий. Идемпотентно."""

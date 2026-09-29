@@ -1,4 +1,4 @@
-from __future__ import annotations
+import os
 
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -11,13 +11,12 @@ class DBConfig(BaseSettings):
         DB_HOST, DB_PORT, DB_ADMIN_USER, DB_ADMIN_PASSWORD,
         DB_APP_USER, DB_APP_PASSWORD, DB_NAME, DB_WAIT_TIMEOUT
     """
-    # TODO
 
-    host: str = "localhost"
-    port: int = 5432
+    host: str = os.environ.get('DB_HOST', "localhost")
+    port: int = os.environ.get('DB_PORT', 5432)
 
     admin_user: str = "postgres"
-    admin_password: SecretStr = SecretStr("")
+    admin_password: SecretStr = SecretStr(os.environ.get('DB_ADMIN_PASSWORD', ""))
 
     app_user: str = "log_service"
     app_password: SecretStr = SecretStr("log_service")
