@@ -57,7 +57,25 @@ async def list_logs(
     return LogPage(items=items, total=total, limit=limit, offset=offset)
 
 
-#@router.delete("", response_model=DeleteResult)
-#@router.delete("/all", response_model=DeleteResult)
-## TODO
+@router.delete("", response_model=DeleteResult)
+async def delete_logs(
+    application: Annotated[str, Query(min_length=1, max_length=255)],
+    dt_from: Annotated[datetime | None, Query(alias="from")] = None,
+    dt_to: Annotated[datetime | None, Query(alias="to")] = None,
+    session: AsyncSession = Depends(get_session)
+) -> DeleteResult:
+    if dt_from and dt_to and dt_from > dt_to:
+        raise HTTPException(status_code=400, detail="'from' must be <= 'to'")
+    
+    service = LogService(session)
+    deleted_row_count: int = await service.delete_logs(application, dt_from, dt_to)
+    return DeleteResult(deleted=deleted_row_count)
 
+
+@router.delete("/all", response_model=DeleteResult)
+async def delete_all_logs(
+    session: AsyncSession = Depends(get_session)
+) -> DeleteResult:
+    service = LogService(session)
+    deleted_row_count: int = await service.truncate_all()
+    return DeleteResult(deleted=deleted_row_count)

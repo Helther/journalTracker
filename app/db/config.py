@@ -15,13 +15,13 @@ class DBConfig(BaseSettings):
     host: str = os.environ.get('DB_HOST', "localhost")
     port: int = os.environ.get('DB_PORT', 5432)
 
-    admin_user: str = "postgres"
-    admin_password: SecretStr = SecretStr(os.environ.get('DB_ADMIN_PASSWORD', ""))
+    admin_user: str = os.environ.get('POSTGRES_USER', "postgres")
+    admin_password: SecretStr = SecretStr(os.environ.get('POSTGRES_PASSWORD', "postgres"))
 
-    app_user: str = "log_service"
-    app_password: SecretStr = SecretStr("log_service")
+    app_user: str = admin_user
+    app_password: SecretStr = admin_password
 
-    database: str = "log_service_db"
+    database: str = os.environ.get('POSTGRES_DB', "log_service_db")
 
     pool_size: int = Field(default=10, ge=1, le=100)
     max_overflow: int = Field(default=20, ge=0, le=100)
