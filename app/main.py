@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from app.db.config import DBConfig
 from app.db.database import Database
 
-from app.api.v1 import health, logs
+from app.api.v1 import health, logs, counters
 
 
 app = FastAPI()
@@ -24,3 +24,4 @@ app = FastAPI(lifespan=app_lifespan)
 
 app.include_router(health.router)
 app.include_router(logs.router)
+app.include_router(counters.router)

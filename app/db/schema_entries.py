@@ -37,3 +37,10 @@ class InsertResult(BaseModel):
 
 class DeleteResult(BaseModel):
     deleted: int
+
+class CounterOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    application: str
+    entries_count: int
+    updated_at: datetime
+    

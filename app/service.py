@@ -5,8 +5,8 @@ from datetime import datetime
 from sqlalchemy import delete, func, insert, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.model_entries import LogEntry
-from app.db.log_schema import LogEntryIn
+from app.db.model_entries import LogEntry, ApplicationCounter
+from app.db.schema_entries import LogEntryIn
 
 
 class LogService:
@@ -126,3 +126,15 @@ class LogService:
 
         await self.session.execute(text("TRUNCATE log_entries"))
         return int(total)
+
+    # -------------------------------------------------------------- COUNTERS
+    async def list_counters(self) -> list[ApplicationCounter]:
+        stmt = select(ApplicationCounter).order_by(ApplicationCounter.application)
+        return list((await self.session.execute(stmt)).scalars().all())
+
+    async def get_counter(self, application: str) -> ApplicationCounter | None:
+        stmt = select(ApplicationCounter).where(
+            ApplicationCounter.application == application
+        )
+        return (await self.session.execute(stmt)).scalar_one_or_none()
+    

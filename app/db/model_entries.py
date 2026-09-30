@@ -23,3 +23,13 @@ class LogEntry(Base):
               postgresql_ops={"event_time": "DESC"}),
         Index("ix_log_entries_time", "event_time"),
     )
+
+class ApplicationCounter(Base):
+    __tablename__ = "application_counters"
+
+    application: Mapped[str] = mapped_column(String(255), primary_key=True)
+    entries_count: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    
