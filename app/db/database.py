@@ -68,8 +68,7 @@ class Database:
             connect_args={
                 "server_settings": {
                     "application_name": "log-service",
-                    "statement_timeout": str(self.config.statement_timeout_ms),
-                    "timezone": "UTC",
+                    "statement_timeout": str(self.config.statement_timeout_ms)
                 },
             },
         )

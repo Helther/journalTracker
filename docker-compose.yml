@@ -1,24 +1,55 @@
 services:
- script:
-  build: ./
-  command: /entrypoint.sh
-  container_name: service
-  depends_on:
-    - db
-  networks:
-    - net
- db:
-  image: postgres:latest
-  container_name: dbpg
-  restart: always
-  volumes:
-    - ./ .database/postgres/data:/var/lib/postgresql/data
-  ports:
-    - "5432"
-  networks:
-    - net
+  db:
+    image: postgres:16
+    container_name: log_service_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -h 127.0.0.1 -d postgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 5s
 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: log_service:latest
+    container_name: log_service
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # --- подключение к БД ---
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_ADMIN_USER: postgres
+      DB_ADMIN_PASSWORD: postgres
+      DB_APP_USER: log_service
+      DB_APP_PASSWORD: log_service
+      DB_NAME: log_service_db
+      # --- параметры пула / retry ---
+      DB_POOL_SIZE: "10"
+      DB_MAX_OVERFLOW: "20"
+      DB_CONNECT_RETRIES: "30"
+      DB_CONNECT_RETRY_DELAY: "1.0"
+      DB_ECHO: "false"
+    ports:
+      - "8000:8000"
+    # Bootstrap (создание роли, БД, схемы, триггеров) выполняется
+    # один раз перед запуском uvicorn. --reload не нужен в проде.
+    command: >
+      sh -c "python -m utils.bootstrap &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000"
 
-networks:
- net:
-  driver: bridge
+volumes:
+  pgdata:

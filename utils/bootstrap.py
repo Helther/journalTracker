@@ -5,8 +5,6 @@ import sys
 from app.db.config import DBConfig
 from app.db.database import Database
 
-from sqlalchemy import text
-
 logging.basicConfig(
     level=logging.INFO,
     format="[bootstrap] %(asctime)s %(levelname)s %(message)s",
