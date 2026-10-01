@@ -1,21 +1,47 @@
 from datetime import datetime, timezone
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, BeforeValidator
+from typing_extensions import Annotated
+from typing import Any
 
+def parse_datetime_or_unix(v: Any) -> Any:
+    """Приводит int/float/str к timezone-aware datetime в UTC.
+
+    Принимает:
+      - int / float - Unix epoch в секундах
+      - str с числом - тоже Unix;
+      - ISO 8601 строку - отдаёт дальше, Pydantic распарсит сам;
+      - datetime - пропускает как есть;
+      - None - пропускает (для опциональных query-параметров).
+    """
+    if v is None or isinstance(v, datetime):
+        return v
+
+    if isinstance(v, bool):
+        raise ValueError("must be Unix seconds or ISO 8601 datetime")
+
+    if isinstance(v, (int, float)):
+        return datetime.fromtimestamp(v, tz=timezone.utc)
+
+    if isinstance(v, str):
+        s = v.strip()
+        if not s:
+            raise ValueError("must not be empty")
+        try:
+            return datetime.fromtimestamp(float(s), tz=timezone.utc)
+        except ValueError:
+            return v
+
+    return v
+
+# Публичный тип для использования в схемах и query-параметрах.
+UnixOrIsoDatetime = Annotated[datetime, BeforeValidator(parse_datetime_or_unix)]
 
 class LogEntryIn(BaseModel):
     application: str = Field(min_length=1, max_length=255)
-    event_time: datetime
+    event_time: UnixOrIsoDatetime
     message: str = Field(min_length=1)
-
-    @field_validator("event_time")
-    @classmethod
-    def _ensure_utc(cls, v: datetime) -> datetime:
-        if v.tzinfo is None:
-            raise ValueError("event_time must be timezone-aware (UTC)")
-        return v.astimezone(timezone.utc)
-
-
+    
 class LogEntryOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
@@ -43,4 +69,3 @@ class CounterOut(BaseModel):
     application: str
     entries_count: int
     updated_at: datetime
-    

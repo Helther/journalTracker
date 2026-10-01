@@ -10,6 +10,7 @@ from app.db.schema_entries import (
     InsertResult,
     LogEntryIn,
     LogPage,
+    UnixOrIsoDatetime
 )
 from app.service import LogService
 
@@ -35,8 +36,8 @@ async def insert_logs(
 @router.get("", response_model=LogPage)
 async def list_logs(
     application: Annotated[str, Query(min_length=1, max_length=255)],
-    dt_from: Annotated[datetime | None, Query(alias="from")] = None,
-    dt_to: Annotated[datetime | None, Query(alias="to")] = None,
+    dt_from: Annotated[UnixOrIsoDatetime | None, Query(alias="from")] = None,
+    dt_to: Annotated[UnixOrIsoDatetime | None, Query(alias="to")] = None,
     limit: Annotated[int, Query(ge=1, le=1000)] = 100,
     offset: Annotated[int, Query(ge=0)] = 0,
     order: Annotated[str, Query(pattern="^(asc|desc)$")] = "desc",
@@ -60,8 +61,8 @@ async def list_logs(
 @router.delete("", response_model=DeleteResult)
 async def delete_logs(
     application: Annotated[str, Query(min_length=1, max_length=255)],
-    dt_from: Annotated[datetime | None, Query(alias="from")] = None,
-    dt_to: Annotated[datetime | None, Query(alias="to")] = None,
+    dt_from: Annotated[UnixOrIsoDatetime | None, Query(alias="from")] = None,
+    dt_to: Annotated[UnixOrIsoDatetime | None, Query(alias="to")] = None,
     session: AsyncSession = Depends(get_session)
 ) -> DeleteResult:
     if dt_from and dt_to and dt_from > dt_to:

@@ -1,0 +1,24 @@
+services:
+ script:
+  build: ./
+  command: /entrypoint.sh
+  container_name: service
+  depends_on:
+    - db
+  networks:
+    - net
+ db:
+  image: postgres:latest
+  container_name: dbpg
+  restart: always
+  volumes:
+    - ./ .database/postgres/data:/var/lib/postgresql/data
+  ports:
+    - "5432"
+  networks:
+    - net
+
+
+networks:
+ net:
+  driver: bridge
